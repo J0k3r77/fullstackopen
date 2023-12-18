@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant browser
+    participant server
+
+    Note right of browser: The browser creates a new note, pushes it to notes on browser side and rerenders the list
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/main.css
+    Note right of browser: The browser sends a JSON to the server : {"content": "salut", "date": "2023-12-18T13:26:54.885Z"}
+    activate server
+    loop notesUpdate
+        server->>server: Pushes note into notes on the server side
+    end
+    deactivate server
