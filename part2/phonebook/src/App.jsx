@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import personsServices from "./services/persons";
 import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
@@ -19,6 +18,14 @@ const App = () => {
       .getAll()
       .then((initialPersons) => setPersons(initialPersons));
   }, []);
+
+  const setNotification = (type, message) => {
+    setNotificationType(type);
+    setNotificationMessage(message);
+    setTimeout(() => {
+      setNotificationMessage(null);
+    }, 3000);
+  };
 
   const handleNameChange = (event) => {
     setNewName(event.target.value);
@@ -53,42 +60,38 @@ const App = () => {
                 n.id !== updatedPerson.id ? n : updatedPerson
               )
             );
-            setNotificationType("success");
-            setNotificationMessage(
+            setNotification(
+              "success",
               `${updatedPerson.name} phone number has been updated to ${updatedPerson.number}`
             );
-            setTimeout(() => {
-              setNotificationMessage(null);
-            }, 3000);
           })
-          .catch((error) => {
-            setNotificationType("error");
-            setNotificationMessage(
+          .catch(() => {
+            setNotification(
+              "error",
               `${person.name} has already been removed from server`
             );
-            setTimeout(() => {
-              setNotificationMessage(null);
-            }, 3000);
             setPersons(persons.filter((n) => n.id !== person.id));
           });
       }
     } else if (allNumbers.includes(newPerson.number)) {
-      setNotificationType("error");
-      setNotificationMessage(`${newPerson.number} is already in the phonebook`);
-      setTimeout(() => {
-        setNotificationMessage(null);
-      }, 3000);
+      setNotification(
+        "error",
+        `${newPerson.number} is already in the phonebook`
+      );
     } else {
-      personsServices.add(newPerson).then((newlyAddedPerson) => {
-        setPersons(persons.concat(newlyAddedPerson));
-        setNotificationType("success");
-        setNotificationMessage(
-          `${newlyAddedPerson.name} has been added to the phonebook`
-        );
-        setTimeout(() => {
-          setNotificationMessage(null);
-        }, 3000);
-      });
+      personsServices
+        .add(newPerson)
+        .then((newlyAddedPerson) => {
+          setPersons(persons.concat(newlyAddedPerson));
+          setNotification(
+            "success",
+            `${newlyAddedPerson.name} has been added to the phonebook`
+          );
+        })
+        .catch((error) => {
+          console.log(error.response.data.error);
+          setNotification("error", error.response.data.error);
+        });
     }
   };
 
